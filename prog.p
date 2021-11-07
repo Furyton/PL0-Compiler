@@ -8,7 +8,7 @@ begin
   read(b);
   while b#0 do
     begin
-      call  p;
+      call p;
       write(2*c);
       read(b)
     end

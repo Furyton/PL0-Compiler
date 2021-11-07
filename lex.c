@@ -283,36 +283,36 @@ void getSYM(int len) {
 
 
 
-// int main(int argc, char *argv[]) {
-// 	FILE *infile, *outfile;
+int main(int argc, char *argv[]) {
+	FILE *infile, *outfile;
 
-// 	infile = fopen("prog.p", "r");
+	infile = fopen("prog.p", "r");
 
-// 	outfile = fopen("_lex.p", "w");
+	outfile = fopen("_lex.p", "w");
 
-// 	char ch;
+	char ch;
 
-// 	int len = 0;
+	int len = 0;
 
-// 	if (infile) {
-// 		while((ch = fgetc(infile)) != EOF ) prog[len ++] = ch;
-// 		fclose(infile);
-// 	}
+	if (infile) {
+		while((ch = fgetc(infile)) != EOF ) prog[len ++] = ch;
+		fclose(infile);
+	}
 
-// 	len = preprocess(len);
+	len = preprocess(len);
 
-// 	puts(prog);
+	puts(prog);
 
-// 	fprintf(outfile, "=======\n%s\n========\n", prog);
-// 	fputc('\n', outfile);
+	fprintf(outfile, "=======\n%s\n========\n", prog);
+	fputc('\n', outfile);
 
-// 	getSYM(len);
+	getSYM(len);
 
-// 	int i;
-// 	for (i = 0; i < token_n; i++) {
-// 		fprintf(outfile, "%d %s %d\n", tokens[i].sym, tokens[i].id, tokens[i].num);
-// 	}
+	int i;
+	for (i = 0; i < token_n; i++) {
+		fprintf(outfile, "%d %s %d\n", tokens[i].sym, tokens[i].id, tokens[i].num);
+	}
 
-// 	return 0;
-// }
+	return 0;
+}
 
