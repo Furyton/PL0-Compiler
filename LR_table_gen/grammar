@@ -1,0 +1,40 @@
+S -> M Q P
+P -> C V PC N SMT
+PC -> PC' | ^
+PC' -> PH M P ;
+PC' -> PC' PC'
+PH -> proc id ;
+C -> C' | ^
+C' -> const CD
+C' -> C' , CD
+CD -> id = num
+V -> V' | ^
+V' -> var id
+V' -> V' , id
+M -> ^
+Q -> ^
+N -> ^
+SMT -> A | CONDSMT | WHILE | CALL | READ | WRITE | COMP | ^
+A -> id := E
+COMP -> COMPBEGIN end
+COMPBEGIN -> begin SMT | COMPBEGIN ; SMT
+COND -> E rel E
+COND -> odd E
+CONDSMT -> if COND W then SMT
+CALL -> CALL id
+WRITE -> WRITEBEGIN )
+WRITEBEGIN -> WRITE ( id
+WRITEBEGIN -> WRITEBEGIN , id
+READ -> READBEGIN )
+READBEGIN -> READ ( id
+READBEGIN -> READBEGIN , id
+E -> PLUS T
+E -> E + T
+PLUS -> + | ^
+T -> F
+T -> T * F
+F -> id
+F -> num
+F -> ( E )
+WHILE -> while N COND W do SMT
+W -> ^

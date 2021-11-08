@@ -158,13 +158,44 @@ class SLRParser:
         return parse_table
 
     def print_info(self):
+
+        print(len(self.C), ' ', len(self.parse_table_symbols))
+
+        for r in range(len(self.C)):
+            # print(f'{r:^{3}}', end=' ')
+
+            for c in self.parse_table_symbols:
+                # print(f'{self.parse_table[r][c]:^{3 - 1}}', end=' ')
+                if self.parse_table[r][c] == 'acc':
+                    print(len(self.C) + 100, end=' ')
+                elif self.parse_table[r][c] == "":
+                    print('0', end=' ')
+                elif str(self.parse_table[r][c])[0] == 'r':
+                    print(f'-{self.parse_table[r][c][1:]}', end=' ')
+                elif str(self.parse_table[r][c])[0] == 's' :
+                    print(f'{self.parse_table[r][c][1:]}', end=' ')
+                else:
+                    print(f'{self.parse_table[r][c]}', end=' ')
+            print()
+
+        print("========")
+
         print(self.action)
+        print("========")
 
         print(self.goto)
+        print("========")
+        
+        # for r in range(len(self.C)):
+        #     print(f'{r:^{3}}', end=' ')
+
+        #     for c in self.parse_table_symbols:
+        #         print(f'{self.parse_table[r][c]:^{3 - 1}}', end=' ')
+        #     print()
 
         # print(self.parse_table)
 
-        print(json.dumps(self.parse_table, indent=4))
+        # print(json.dumps(self.parse_table, indent=4))
 
 
         def fprint(text, variable):

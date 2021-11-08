@@ -55,7 +55,6 @@ typedef enum {
 	NUMBER,
 } SYM;
 
-
 typedef struct {
 	SYM sym;
 	char id[MAX_ID_LEN];
@@ -68,11 +67,9 @@ int token_n;
 
 Token tokens[MAX_TOKEN_N];
 
-//============= lexical part ================
+/*************** lexical part ***************/
 
 #define KEYWORD_N 13
-
-const char* keywords[KEYWORD_N];
 
 #define KEYCHAR_N 13
 
@@ -80,7 +77,7 @@ const char keychars[KEYCHAR_N];
 
 #define SPECIAL_N 16
 
-const char* special_chars[SPECIAL_N];
+void lexical_analysis(FILE *in, FILE *out);
 
 SYM getKeywordType(const char* str);
 SYM getSpecialType(const char* str);
@@ -90,7 +87,7 @@ int isDigit(char ch);
 
 int isSpecial(char ch);
 
-void strrm(char str[], int *index, int *len);
+void print_token(FILE*, Token *token);
 
 typedef enum {
     S_START,
@@ -102,5 +99,40 @@ typedef enum {
 	S_CHECK,
     S_ERROR,
 } STATE;
+
+/*************** syntax part ***************/
+
+#define MAX_VAR_PER_TABLE 32
+#define MAX_TABLE_N 8
+
+int nxq; // next quad
+
+typedef struct {
+	
+} Var;
+
+typedef struct {
+	Var *place;
+	int nxq;
+} NT; // non terminals
+
+typedef struct {
+	union {
+		NT * V;
+		SYM * T;
+	} u;
+
+	enum {NonTerminal, Terminal} kind;
+} Item; // used in the stack
+
+typedef struct {
+	Var variables[MAX_VAR_PER_TABLE];
+	int val_len;
+	int offset;
+	int lev;
+} Table;
+
+Table tables[MAX_TABLE_N];
+int table_top;
 
 #endif

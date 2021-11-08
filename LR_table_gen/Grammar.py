@@ -1,8 +1,8 @@
 
 
-file_path = "grammar.g"
+# file_path = "grammar.g"
 
-grammar_file = open(file_path, "r")
+# grammar_file = open(file_path, "r")
 
 class Grammar:
     def __init__(self, grammar_str):
@@ -40,7 +40,7 @@ class Grammar:
 
         self.symbols = self.terminals | self.nonterminals
 
-g = Grammar(grammar_file.read())
+# g = Grammar(grammar_file.read())
 
 # Grammar.terminals
 

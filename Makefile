@@ -1,92 +1,51 @@
-#
-# 'make'        build executable file 'main'
-# 'make clean'  removes all .o and executable files
-#
+# lextest: driver.o lex.yy.o errormsg.o util.o
+# 	cc -g -o lextest driver.o lex.yy.o errormsg.o util.o
 
-# define the Cpp compiler to use
-CXX = gcc
+# driver.o: driver.c tokens.h errormsg.h util.h
+# 	cc -g -c driver.c
 
-# define any compile-time flags
-CXXFLAGS	:= -g
+# errormsg.o: errormsg.c errormsg.h util.h
+# 	cc -g -c errormsg.c
 
-# define library paths in addition to /usr/lib
-#   if I wanted to include libraries not in /usr/lib I'd specify
-#   their path using -Lpath, something like:
-# LFLAGS = -lglad -lglfw3dll -lassimp -lzlibstatic -lobjects
+# lex.yy.o: lex.yy.c tokens.h errormsg.h util.h
+# 	cc -g -c lex.yy.c
 
-# define output directory
-OUTPUT	:= output
+# lex.yy.c: tiger.lex
+# 	lex tiger.lex
 
-# define source directory
-SRC		:= .
+# util.o: util.c util.h
+# 	cc -g -c util.c
 
-# define include directory
-INCLUDE	:=
+# clean: 
+# 	rm -f a.out util.o driver.o lex.yy.o lex.yy.c errormsg.o
 
-# define lib directory
-LIB		:=
+SOURCE_CODE := prog.pas
 
-ifeq ($(OS),Windows_NT)
-MAIN	:= main
-SOURCEDIRS	:= $(SRC)
-INCLUDEDIRS	:= $(INCLUDE)
-LIBDIRS		:= $(LIB)
-FIXPATH = $(subst /,\,$1)
-RM			:= rm
-MD	:= mkdir
-else
-MAIN	:= main
-SOURCEDIRS	:= $(shell find $(SRC) -type d)
-INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
-LIBDIRS		:= $(shell find $(LIB) -type d)
-FIXPATH = $1
-RM = rm -f
-MD	:= mkdir -p
-endif
+compiler: compiler.o utils.o lex.o synt.o
+	cc -g -o compiler compiler.o utils.o lex.o synt.o
 
-# define any directories containing header files other than /usr/include
-INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
+compiler.o: compiler.c def.h
+	cc -g -c compiler.c
 
-# define the C libs
-LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
+utils.o: utils.c def.h
+	cc -g -c utils.c
 
-# define the C source files
-SOURCES		:= $(wildcard $(patsubst %,%/*.c, $(SOURCEDIRS)))
+lex.o: lex.c def.h
+	cc -g -c lex.c
 
-# define the C object files 
-OBJECTS		:= $(SOURCES:.c=.o)
+synt.o: synt.c def.h table.grammar
+	cc -g -c synt.c
 
-# LIBRARIES	:= -lglad -lglfw3dll -lassimp -lzlibstatic
-#
-# The following part of the makefile is generic; it can be used to 
-# build any executable just by changing the definitions above and by
-# deleting dependencies appended to the file from 'make depend'
-#
+table.grammar:
+	python3 LR_table_gen/LR_table.py "LR_table_gen/grammar" > table.grammar
 
-OUTPUTMAIN	:= $(call FIXPATH,$(OUTPUT)/$(MAIN))
-
-all: $(OUTPUT) $(MAIN)
-	@echo Executing 'all' complete!
-
-$(OUTPUT):
-	$(MD) $(OUTPUT)
-
-$(MAIN): $(OBJECTS) 
-	$(CXX) $(CXX_FLAGS) $(OBJECTS) -o $(OUTPUTMAIN) $(LFLAGS)
-
-# this is a suffix replacement rule for building .o's from .c's
-# it uses automatic variables $<: the name of the prerequisite of
-# the rule(a .c file) and $@: the name of the target of the rule (a .o file) 
-# (see the gnu make manual section about automatic variables)
-.c.o:
-	$(CXX) $(CXXFLAGS) -c $<  -o $@
-
-.PHONY: clean
-clean:	
-	$(RM) $(call FIXPATH,$(OUTPUTMAIN))
-	$(RM) $(call FIXPATH,$(OBJECTS))
-	@echo Cleanup complete!
+all: compiler
 
 run: all
-	./$(OUTPUTMAIN)
-	@echo Executing 'run: all' complete!
+	./compiler ${SOURCE_CODE}
+
+clean:
+	rm -f compiler *.o _*
+
+cleanall:
+	rm -f -r compiler *.o _* table.grammar LR_table_gen/__pycache__

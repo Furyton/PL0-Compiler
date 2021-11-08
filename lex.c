@@ -281,38 +281,29 @@ void getSYM(int len) {
 	}
 }
 
-
-
-int main(int argc, char *argv[]) {
-	FILE *infile, *outfile;
-
-	infile = fopen("prog.p", "r");
-
-	outfile = fopen("_lex.p", "w");
-
+void lexical_analysis(FILE *in, FILE *out) {
 	char ch;
 
 	int len = 0;
 
-	if (infile) {
-		while((ch = fgetc(infile)) != EOF ) prog[len ++] = ch;
-		fclose(infile);
+	if (in) {
+		while((ch = fgetc(in)) != EOF ) prog[len ++] = ch;
+		fclose(in);
 	}
 
+	fprintf(out, "original code:\n%s\n", prog);
 	len = preprocess(len);
 
-	puts(prog);
-
-	fprintf(outfile, "=======\n%s\n========\n", prog);
-	fputc('\n', outfile);
+	fprintf(out, "\n=======\nafter preprocessing\n%s\n", prog);
+	fputc('\n', out);
 
 	getSYM(len);
 
+	fprintf(out, "SYM name       SYM value\n");
+
 	int i;
 	for (i = 0; i < token_n; i++) {
-		fprintf(outfile, "%d %s %d\n", tokens[i].sym, tokens[i].id, tokens[i].num);
+		print_token(out, &tokens[i]);
 	}
-
-	return 0;
 }
 
