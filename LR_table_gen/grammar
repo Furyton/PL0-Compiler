@@ -4,11 +4,11 @@ PC -> PC' | ^
 PC' -> PH M P ;
 PC' -> PC' PC'
 PH -> proc id ;
-C -> C' | ^
+C -> C' ; | ^
 C' -> const CD
 C' -> C' , CD
 CD -> id = num
-V -> V' | ^
+V -> V' ; | ^
 V' -> var id
 V' -> V' , id
 M -> ^
