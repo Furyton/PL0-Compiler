@@ -288,7 +288,6 @@ void lexical_analysis(FILE *in, FILE *out) {
 
 	if (in) {
 		while((ch = fgetc(in)) != EOF ) prog[len ++] = ch;
-		fclose(in);
 	}
 
 	fprintf(out, "original code:\n%s\n", prog);

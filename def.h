@@ -79,6 +79,7 @@ const char keychars[KEYCHAR_N];
 
 void lexical_analysis(FILE *in, FILE *out);
 
+SYM getType(const char* str);
 SYM getKeywordType(const char* str);
 SYM getSpecialType(const char* str);
 
@@ -104,16 +105,24 @@ typedef enum {
 
 #define MAX_VAR_PER_TABLE 32
 #define MAX_TABLE_N 8
+#define MAX_STACK_SIZE 1024
+#define MAX_STATE_N 128
+#define MAX_TERMS 64
+
+// #define TERMINALS_N 22
+// #define NON_TERMINALS_N 30
 
 int nxq; // next quad
 
 typedef struct {
-	
+	char name[MAX_ID_LEN];
+	enum {CONST, VARIABLE, PROCEDURE} kind;
+	int val, lev, offset;
 } Var;
 
 typedef struct {
 	Var *place;
-	int nxq;
+	int val;
 } NT; // non terminals
 
 typedef struct {
@@ -134,5 +143,29 @@ typedef struct {
 
 Table tables[MAX_TABLE_N];
 int table_top;
+
+int state_stack[MAX_STACK_SIZE];
+int state_top;
+
+
+
+int state_n, symbols_n;
+
+int map_table[MAX_STATE_N][MAX_TERMS];
+
+SYM action_header[MAX_TERMS];
+
+void read_map_table();
+
+// void test();
+
+int get_next_action(int state, SYM input_sym);
+
+int cur_state();
+
+void action_stack(int nxt_state);
+void action_reduction(int grammar);
+
+void syntax_analysis();
 
 #endif

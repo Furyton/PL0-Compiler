@@ -14,5 +14,12 @@ int main(int argc, char* argv[]) {
 
     lexical_analysis(source, lex_code);
 
+    fclose(source);
+    fclose(lex_code);
+
+    // test();
+
+    syntax_analysis();
+
     return 0;
 }

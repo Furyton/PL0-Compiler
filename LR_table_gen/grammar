@@ -2,8 +2,8 @@ S -> M Q P
 P -> C V PC N SMT
 PC -> PC' | ^
 PC' -> PH M P ;
-PC' -> PC' PC'
-PH -> proc id ;
+PC' -> PC' PH M P ;
+PH -> procedure id ;
 C -> C' ; | ^
 C' -> const CD
 C' -> C' , CD
@@ -18,15 +18,16 @@ SMT -> A | CONDSMT | WHILE | CALL | READ | WRITE | COMP | ^
 A -> id := E
 COMP -> COMPBEGIN end
 COMPBEGIN -> begin SMT | COMPBEGIN ; SMT
-COND -> E rel E
+COND -> E REL E
+REL -> < | <= | > | >= | = | #
 COND -> odd E
 CONDSMT -> if COND W then SMT
-CALL -> CALL id
+CALL -> call id
 WRITE -> WRITEBEGIN )
-WRITEBEGIN -> WRITE ( id
+WRITEBEGIN -> write ( id
 WRITEBEGIN -> WRITEBEGIN , id
 READ -> READBEGIN )
-READBEGIN -> READ ( id
+READBEGIN -> read ( id
 READBEGIN -> READBEGIN , id
 E -> PLUS T
 E -> E + T

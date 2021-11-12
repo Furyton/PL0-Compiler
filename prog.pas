@@ -9,7 +9,7 @@ begin
   while b#0 do
     begin
       call p;
-      write(2*c);
+      write(c);
       read(b)
     end
 end.

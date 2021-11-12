@@ -178,12 +178,44 @@ class SLRParser:
                     print(f'{self.parse_table[r][c]}', end=' ')
             print()
 
+        print()
+        print(len(self.G_indexed))
+
+
+        for i, (head, body) in enumerate(self.G_indexed):
+            # print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}, {len(body)}')
+
+            # print(len(body))
+            if body == '^': 
+                print(0)
+            else:
+                print(len(body))
+
+        print()    
+
+        print(len(self.action))
+
+        for sym in self.action:
+            print(sym)
+
+        print()
+        # print(len(self.G_indexed))
+
+        for head, body in self.G_indexed:
+            if head == self.G_prime.start:
+                print("-1")
+                continue
+            for i in range(len(self.goto)):
+                if self.goto[i] == head:
+                    print(i)
+                    break
+
         print("========")
 
-        print(self.action)
+        print(len(self.action), self.action)
         print("========")
 
-        print(self.goto)
+        print(len(self.goto), self.goto)
         print("========")
         
         # for r in range(len(self.C)):
@@ -201,16 +233,16 @@ class SLRParser:
         def fprint(text, variable):
             print(f'{text:>12}: {", ".join(variable)}')
 
-        def print_line():
-            print(f'+{("-" * width + "+") * (len(list(self.G_prime.symbols) + ["$"]))}')
+        # def print_line():
+        #     print(f'+{("-" * width + "+") * (len(list(self.G_prime.symbols) + ["$"]))}')
 
-        def symbols_width(symbols):
-            return (width + 1) * len(symbols) - 1
+        # def symbols_width(symbols):
+        #     return (width + 1) * len(symbols) - 1
 
         print('AUGMENTED GRAMMAR:')
 
         for i, (head, body) in enumerate(self.G_indexed):
-            print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}')
+            print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}, {len(body)}')
 
         print()
         fprint('TERMINALS', self.G_prime.terminals)

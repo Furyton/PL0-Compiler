@@ -1,4 +1,7 @@
 #include "def.h"
+#include "grammar.h"
+
+/*************** lexical part ***************/
 
 const char keychars[] = {'+', '-', '*', '/', '(', ')', '=', ',' , '.', '<', '>',  ';' , ':'};
 
@@ -80,6 +83,17 @@ const char* SYM_name[] = {
 	[D_RP]		"D_RP",
 };
 
+SYM getType(const char* str) {
+	int i;
+	for (i = K_BEGIN; i <= D_RP; i++) {
+		if (strcmp(str, SYM_table[i]) == 0) {
+			return (SYM) i;
+		}
+	}
+
+	return NUL_TYPE;
+}
+
 SYM getKeywordType(const char* str) {
 	int i;
 	for (i = K_BEGIN; i <= K_WRITE; i++) {
@@ -130,4 +144,88 @@ void print_token(FILE* out, Token *token) {
 	} else {
 		fprintf(out, "%-15s%s\n", SYM_name[token->sym], SYM_table[token->sym]);
 	}
+}
+
+/*************** syntax part ***************/
+
+void read_map_table() {
+	FILE* in = fopen("table.grammar", "r");
+
+	// table info
+
+	fscanf(in, "%d%d", &state_n, &symbols_n);
+
+	int i, j;
+	for (i = 0; i < state_n; i++) {
+		for (j = 0; j < symbols_n; j++) {
+			fscanf(in, "%d", &map_table[i][j]);
+		}
+	}
+
+	// grammar length
+
+	fscanf(in, "%d", &grammar_n);
+	for (i = 0; i < grammar_n; i++) {
+		fscanf(in, "%d", &grammar_length[i]);
+	}
+
+	// symbols indexed by table
+
+	fscanf(in, "%d", &terminal_n);
+	char t[16];
+
+	for (i = 0; i < terminal_n; i++) {
+		fscanf(in, "%s", t);
+		if (strcmp(t, "$") == 0) {
+			action_header[i] = D_PERIOD;
+		} else if (strcmp(t, "id") == 0) {
+			action_header[i] = ID;
+		} else if (strcmp(t, "num") == 0) {
+			action_header[i] = NUMBER;
+		} else {
+			action_header[i] = getType(t);
+		}
+	}
+
+
+	// grammar LHS index in table goto header
+
+	for (i = 0; i < grammar_n; i++) {
+		fscanf(in, "%d", &grammar_index[i]);
+	}
+
+	fclose(in);
+}
+
+int get_next_action(int state, SYM input_sym) {
+	int i;
+	for (i = 0; i < terminal_n; i++) {
+		if (input_sym == action_header[i]) {
+			return map_table[state][i];
+		}
+
+		if (input_sym == O_MINUS && action_header[i] == O_PLUS) {
+			return map_table[state][i];
+		}
+
+		if (input_sym == O_DIV && action_header[i] == O_MULTI) {
+			return map_table[state][i];
+		}
+	}
+
+	return 0;
+}
+
+int cur_state() {
+	return state_stack[state_top];
+}
+
+void action_stack(int nxt_state) {
+	state_stack[++state_top] = nxt_state;
+}
+
+void action_reduction(int grammar) {
+	state_top -= grammar_length[grammar];
+
+	action_stack(map_table[cur_state()][grammar_index[grammar] + terminal_n]);
 }
