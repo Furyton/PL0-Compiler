@@ -77,7 +77,7 @@ const char keychars[KEYCHAR_N];
 
 #define SPECIAL_N 16
 
-void lexical_analysis(FILE *in, FILE *out);
+int lexical_analysis(FILE *in, FILE *out, FILE *err);
 
 SYM getType(const char* str);
 SYM getKeywordType(const char* str);
@@ -166,6 +166,6 @@ int cur_state();
 void action_stack(int nxt_state);
 void action_reduction(int grammar);
 
-void syntax_analysis();
+int syntax_analysis(FILE* err);
 
 #endif

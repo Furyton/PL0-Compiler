@@ -180,6 +180,7 @@ class LR1Parser:
                                 #     parse_table[i][f] += f'r{j}'
                                 # print(head[1],'!')
                                 if parse_table[i][head[1]]:
+                                    exit(-23)
                                     parse_table[i][head[1]] += '/'
                                 parse_table[i][head[1]] += f'r{j}'
                                 break
@@ -231,11 +232,11 @@ def main():
     # parser.add_argument('-g', action='store_true', help='generate automaton')
     # parser.add_argument('tokens', help='tokens to be parsed - all tokens are separated with spaces')
     # args = parser.parse_args()
-    file = "grammar.g"
+    file = "grammar"
 
     G = Grammar(open(file).read())
     slr_parser = LR1Parser(G)
-    slr_parser.print_info()
+    # slr_parser.print_info()
     # results = slr_parser.LR_parser(args.tokens)
     # slr_parser.print_LR_parser(results)
 

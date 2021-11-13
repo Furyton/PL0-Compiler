@@ -1,5 +1,9 @@
 #include "def.h"
 
+/*
+* 
+*/
+
 int preprocess(int len) {
 	int i = 0, status = 0;
 	char ch;
@@ -156,7 +160,7 @@ STATE next_state(STATE cur_state, char last_read_ch, char nxt_ch) {
 	return S_ERROR;
 }
 
-void getSYM(int len) {
+int getSYM(int len, FILE* err) {
 	token_n = 0;
 
 	int i = 0, str_len = 0, num = 0;
@@ -230,9 +234,9 @@ void getSYM(int len) {
 			break;
 
 		case S_ERROR:
-			printf("[lexical]: analysis error unknown %s. [location]: %d \n", str, i);
+			fprintf(err, "[lexical]: analysis error unknown %s. [location]: %d \n", str, i);
 
-			exit(-2);
+			return -1;
 
 		case S_CHECK:
 			if (last_status == S_ID) {
@@ -279,9 +283,11 @@ void getSYM(int len) {
 			break;
 		}
 	}
+
+	return 0;
 }
 
-void lexical_analysis(FILE *in, FILE *out) {
+int lexical_analysis(FILE *in, FILE *out, FILE* err) {
 	char ch;
 
 	int len = 0;
@@ -296,7 +302,9 @@ void lexical_analysis(FILE *in, FILE *out) {
 	fprintf(out, "\n=======\nafter preprocessing\n%s\n", prog);
 	fputc('\n', out);
 
-	getSYM(len);
+	if (getSYM(len, err)) {
+		return -1;
+	}
 
 	fprintf(out, "SYM name       SYM value\n");
 
@@ -304,5 +312,7 @@ void lexical_analysis(FILE *in, FILE *out) {
 	for (i = 0; i < token_n; i++) {
 		print_token(out, &tokens[i]);
 	}
+
+	return 0;
 }
 

@@ -186,7 +186,7 @@ class SLRParser:
             # print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}, {len(body)}')
 
             # print(len(body))
-            if body == '^': 
+            if body == ('^',): 
                 print(0)
             else:
                 print(len(body))
@@ -253,9 +253,9 @@ class SLRParser:
         # for head in self.G_prime.grammar:
         #     print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.first[head])} }}')
 
-        # print('\nFOLLOW:')
-        # for head in self.G_prime.grammar:
-        #     print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.follow[head])} }}')
+        print('\nFOLLOW:')
+        for head in self.G_prime.grammar:
+            print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.follow[head])} }}')
 
         # width = max(len(c) for c in {'ACTION'} | self.G_prime.symbols) + 2
         # for r in range(len(self.C)):
