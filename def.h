@@ -58,7 +58,7 @@ typedef enum {
 typedef struct {
 	SYM sym;
 	char id[MAX_ID_LEN];
-	int num;
+	int num, row; // row number in original code. start with 1.
 } Token;
 
 char prog[MAX_PROG_LEN];

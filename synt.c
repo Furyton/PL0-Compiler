@@ -16,11 +16,17 @@ int syntax_analysis(FILE *err) {
         if (!nxt_action) {
             puts("error!!!");
 
-            print_token(err, &tokens[i - 1]);
-            print_token(err, &tokens[i]);
-            print_token(err, &tokens[i + 1]);
+            fprintf(err, "                SYM name       SYM value           SYM row\n");
 
-            fprintf(err, "error inccurs on %d th token, LR state stack top is %d, current LR state is %d\n", i + 1, state_top, cur_state());
+            fprintf(err, "previous token: ");
+            print_token(err, &tokens[i - 1]);
+            fprintf(err, "----error---->: ");
+            print_token(err, &tokens[i]);
+            fprintf(err, "follow   token: ");
+            print_token(err, &tokens[i + 1]);
+            fputc('\n', err);
+
+            fprintf(err, "error occurs on %d th token in %d th row, LR state stack top is %d, current LR state is %d\n", i + 1, tokens[i].row, state_top, cur_state());
 
             return -1;
         }

@@ -1,11 +1,13 @@
 #include "def.h"
 
 /*
-* 
-*/
+ * remove newlines and comments, replace them with blanks.
+ */
+
+int row[MAX_PROG_LEN];
 
 int preprocess(int len) {
-	int i = 0, status = 0;
+	int i = 0, status = 0, cur_row = 1, cur_col = 1;
 	char ch;
 
 	while(i < len) {
@@ -16,10 +18,11 @@ int preprocess(int len) {
 		case 0:
 			if (ch == '/') status = 1;
 			else if (ch == ' ') status = 5;
-			else if (ch == '\r' || ch == '\n' || ch == '\t') {
-				// strrm(prog, &i, &len);
+			else if (ch == '\r' || ch == '\n' || ch == '\t')  {
 				prog[i] = ' ';
+				if (ch == '\n') cur_row ++;
 			}
+
 			break;
 		
 		case 1:
@@ -35,57 +38,39 @@ int preprocess(int len) {
 			if (ch == '\r' || ch == '\n') {
 				status = 0;
 				i --;
-				// strrm(prog, &i, &len);
-				// strrm(prog, &i, &len);
 				prog[i++] = ' ';
-				prog[i++] = ' ';
-			} else {
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
+				if (ch == '\n') cur_row ++;
 			}
+
+			prog[i++] = ' ';
 			break;
 		
 		case 3:
-			if (ch == '*') {
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
-				status = 4;
-			} else {
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
-			}
-
+			if (ch == '*') status = 4;
+			
+			prog[i++] = ' ';
 			break;
 		
 		case 4:
 			if (ch == '/') {
-				// strrm(prog, &i, &len);
-				// strrm(prog, &i, &len);
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
 				prog[i++] = ' ';
 				prog[i++] = ' ';
 				status = 0;
-			} else if (ch == '*') {
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
-			} else {
-				// strrm(prog, &i, &len);
-				prog[i++] = ' ';
-				status = 3;
-			}
+			} else if (ch != '*')  status = 3;
 
+			prog[i++] = ' ';
 			break;
-		
+
 		case 5:
 			if (ch == ' ') {
-				// strrm(prog, &i, &len);
 				prog[i++] = ' ';
 			} else {
 				status = 0;
 				i--;
 			}
 		}
+
+		row[i] = cur_row;
 
 		i++;
 	}
@@ -163,7 +148,7 @@ STATE next_state(STATE cur_state, char last_read_ch, char nxt_ch) {
 int getSYM(int len, FILE* err) {
 	token_n = 0;
 
-	int i = 0, str_len = 0, num = 0;
+	int i = 0, str_len = 0, num = 0, start_i = 0;
 
 	char ch, str[MAX_ID_LEN];
 
@@ -182,6 +167,7 @@ int getSYM(int len, FILE* err) {
 		switch (status)
 		{
 		case S_START:
+			start_i = i;
 			status = next_state(status, ch, ch);
 
 			memset(str, 0, sizeof(str));
@@ -239,6 +225,7 @@ int getSYM(int len, FILE* err) {
 			return -1;
 
 		case S_CHECK:
+			tokens[token_n].row = row[i];
 			if (last_status == S_ID) {
 				tokens[token_n].sym = ID;
 				memcpy(tokens[token_n].id, str, str_len);
@@ -306,7 +293,7 @@ int lexical_analysis(FILE *in, FILE *out, FILE* err) {
 		return -1;
 	}
 
-	fprintf(out, "SYM name       SYM value\n");
+	fprintf(out, "SYM name       SYM value            SYM row\n");
 
 	int i;
 	for (i = 0; i < token_n; i++) {

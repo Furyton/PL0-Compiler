@@ -138,11 +138,11 @@ void print_token(FILE* out, Token *token) {
 	SYM symbol = token->sym;
 
 	if (symbol == ID) {
-		fprintf(out, "ID             %s\n", token->id);
+		fprintf(out, "ID             %-19s%3d\n", token->id, token->row);
 	} else if(symbol == NUMBER) {
-		fprintf(out, "NUM            %d\n", token->num);
+		fprintf(out, "NUM            %-5d%17d\n", token->num, token->row);
 	} else {
-		fprintf(out, "%-15s%s\n", SYM_name[token->sym], SYM_table[token->sym]);
+		fprintf(out, "%-15s%-15s%7d\n", SYM_name[token->sym], SYM_table[token->sym], token->row);
 	}
 }
 
