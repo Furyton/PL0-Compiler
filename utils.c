@@ -217,20 +217,20 @@ int get_next_action(int state, SYM input_sym) {
 }
 
 int cur_state() {
-	return state_stack[state_top];
+	return state_stack[top];
 }
 
-void action_stack(int nxt_state) {
-	state_stack[++state_top] = nxt_state;
+void action_shift(int nxt_state) {
+	state_stack[++top] = nxt_state;
 }
 
 void action_reduction(int grammar) {
-	state_top -= grammar_length[grammar];
+	top -= grammar_length[grammar];
 
 	if (grammar_index[grammar] < 0) {
 		puts("[action_reduction]: grammar_index < 0!!!");
 		exit(-1);
 	}
 
-	action_stack(map_table[cur_state()][grammar_index[grammar] + terminal_n]);
+	action_shift(map_table[cur_state()][grammar_index[grammar] + terminal_n]);
 }

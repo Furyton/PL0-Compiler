@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
-# from graphviz import Digraph
 from Grammar import Grammar
 import argparse
-import json
 
 
 def first_follow(G):
@@ -242,7 +240,7 @@ class SLRParser:
         print('AUGMENTED GRAMMAR:')
 
         for i, (head, body) in enumerate(self.G_indexed):
-            print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}, {len(body)}')
+            print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}')
 
         print()
         fprint('TERMINALS', self.G_prime.terminals)
@@ -256,77 +254,6 @@ class SLRParser:
         print('\nFOLLOW:')
         for head in self.G_prime.grammar:
             print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.follow[head])} }}')
-
-        # width = max(len(c) for c in {'ACTION'} | self.G_prime.symbols) + 2
-        # for r in range(len(self.C)):
-        #     max_len = max(len(str(c)) for c in self.parse_table[r].values())
-
-        #     if width < max_len + 2:
-        #         width = max_len + 2
-
-        # print('\nPARSING TABLE:')
-        # print(f'+{"-" * width}+{"-" * symbols_width(self.action)}+{"-" * symbols_width(self.goto)}+')
-        # print(f'|{"":{width}}|{"ACTION":^{symbols_width(self.action)}}|{"GOTO":^{symbols_width(self.goto)}}|')
-        # print(f'|{"STATE":^{width}}+{("-" * width + "+") * len(self.parse_table_symbols)}')
-        # print(f'|{"":^{width}}|', end=' ')
-
-        # for symbol in self.parse_table_symbols:
-        #     print(f'{symbol:^{width - 1}}|', end=' ')
-
-        # print()
-        # print_line()
-
-        # for r in range(len(self.C)):
-        #     print(f'|{r:^{width}}|', end=' ')
-
-        #     for c in self.parse_table_symbols:
-        #         print(f'{self.parse_table[r][c]:^{width - 1}}|', end=' ')
-
-        #     print()
-
-        # print_line()
-        # print()
-
-    def generate_automaton(self):
-        automaton = Digraph('automaton', node_attr={'shape': 'record'})
-
-        for i, I in enumerate(self.C):
-            I_html = f'<<I>I</I><SUB>{i}</SUB><BR/>'
-
-            for head, bodies in I.items():
-                for body in bodies:
-                    I_html += f'<I>{head:>{self.max_G_prime_len}}</I> &#8594;'
-
-                    for symbol in body:
-                        if symbol in self.G_prime.nonterminals:
-                            I_html += f' <I>{symbol}</I>'
-                        elif symbol in self.G_prime.terminals:
-                            I_html += f' <B>{symbol}</B>'
-                        else:
-                            I_html += f' {symbol}'
-
-                    I_html += '<BR ALIGN="LEFT"/>'
-
-            automaton.node(f'I{i}', f'{I_html}>')
-
-        for r in range(len(self.C)):
-            for c in self.parse_table_symbols:
-                if isinstance(self.parse_table[r][c], int):
-                    automaton.edge(f'I{r}', f'I{self.parse_table[r][c]}', label=f'<<I>{c}</I>>')
-
-                elif 's' in self.parse_table[r][c]:
-                    i = self.parse_table[r][c][self.parse_table[r][c].index('s') + 1:]
-
-                    if '/' in i:
-                        i = i[:i.index('/')]
-
-                    automaton.edge(f'I{r}', f'I{i}', label=f'<<B>{c}</B>>' if c in self.G_prime.terminals else c)
-
-                elif self.parse_table[r][c] == 'acc':
-                    automaton.node('acc', '<<B>accept</B>>', shape='none')
-                    automaton.edge(f'I{r}', 'acc', label='$')
-
-        automaton.view()
 
     def LR_parser(self, w):
         buffer = f'{w} $'.split()
@@ -410,19 +337,12 @@ class SLRParser:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('grammar_file', type=argparse.FileType('r'), help='text file to be used as grammar')
-    # parser.add_argument('-g', action='store_true', help='generate automaton')
-    # parser.add_argument('tokens', help='tokens to be parsed - all tokens are separated with spaces')
     args = parser.parse_args()
 
     G = Grammar(args.grammar_file.read())
     slr_parser = SLRParser(G)
     slr_parser.print_info()
-    # results = slr_parser.LR_parser(args.tokens)
-    # slr_parser.print_LR_parser(results)
-
-    # if args.g:
-    #     slr_parser.generate_automaton()
-
+    
 
 if __name__ == "__main__":
     main()

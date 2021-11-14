@@ -4,8 +4,7 @@
 int syntax_analysis(FILE *err) {
     read_map_table();
 
-    memset(state_stack, 0, sizeof(state_stack));
-    state_top = 0;
+    top = 0;
 
     int i = 0;
     while(i < token_n) {
@@ -26,7 +25,7 @@ int syntax_analysis(FILE *err) {
             print_token(err, &tokens[i + 1]);
             fputc('\n', err);
 
-            fprintf(err, "error occurs on %d th token in %d th row, LR state stack top is %d, current LR state is %d\n", i + 1, tokens[i].row, state_top, cur_state());
+            fprintf(err, "error occurs on %d th token in %d th row, LR state stack top is %d, current LR state is %d\n", i + 1, tokens[i].row, top, cur_state());
 
             return -1;
         }
@@ -36,7 +35,7 @@ int syntax_analysis(FILE *err) {
         }
 
         if (nxt_action > 0) {
-            action_stack(nxt_action);
+            action_shift(nxt_action);
             i ++;
         } else {
             action_reduction(-nxt_action);

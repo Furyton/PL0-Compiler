@@ -108,9 +108,8 @@ typedef enum {
 #define MAX_STACK_SIZE 1024
 #define MAX_STATE_N 128
 #define MAX_TERMS 64
+#define MAX_LEV 12
 
-// #define TERMINALS_N 22
-// #define NON_TERMINALS_N 30
 
 int nxq; // next quad
 
@@ -137,17 +136,22 @@ typedef struct {
 typedef struct {
 	Var variables[MAX_VAR_PER_TABLE];
 	int val_len;
-	int offset;
 	int lev;
+	Table* prev;
 } Table;
 
-Table tables[MAX_TABLE_N];
+Table tables_stack[MAX_STACK_SIZE];
 int table_top;
 
+int offset_stack[MAX_LEV];
+int offset_top;
+
 int state_stack[MAX_STACK_SIZE];
-int state_top;
+Item item_stack[MAX_STACK_SIZE];
+int top;
 
 
+// SLR dealer
 
 int state_n, symbols_n;
 
@@ -157,14 +161,14 @@ SYM action_header[MAX_TERMS];
 
 void read_map_table();
 
-// void test();
-
 int get_next_action(int state, SYM input_sym);
 
 int cur_state();
 
-void action_stack(int nxt_state);
+void action_shift(int nxt_state);
 void action_reduction(int grammar);
+
+// 
 
 int syntax_analysis(FILE* err);
 
