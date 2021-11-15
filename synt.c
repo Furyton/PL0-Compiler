@@ -6,6 +6,8 @@ int syntax_analysis(FILE *err) {
 
     top = 0;
 
+    // table_enter("test", V_kind.CONST);
+
     int i = 0;
     while(i < token_n) {
         int nxt_action = get_next_action(cur_state(), tokens[i].sym);

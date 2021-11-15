@@ -20,7 +20,7 @@ begin
       q := q + 1
     end
   end
-end;
+end;;
 
 procedure gcd;
 var  g;

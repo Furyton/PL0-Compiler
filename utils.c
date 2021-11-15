@@ -197,6 +197,10 @@ void read_map_table() {
 	fclose(in);
 }
 
+// void table_enter(char* name, V_kind kind) {
+// 	return;
+// }
+
 int get_next_action(int state, SYM input_sym) {
 	int i;
 	for (i = 0; i < terminal_n; i++) {

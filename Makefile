@@ -12,6 +12,8 @@ utils.o: utils.c def.h
 lex.o: lex.c def.h
 	cc -g -c lex.c
 
+def.h: PL0.h
+
 synt.o: synt.c def.h  grammar.h table.grammar
 	cc -g -c synt.c
 
