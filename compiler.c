@@ -7,11 +7,12 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    FILE *source, *lex_code, *err;
+    FILE *source, *lex_code, *synt_code, *err;
 
     source = fopen(argv[1], "r");
     lex_code = fopen("_lex_code", "w");
-    err = fopen("errmsg.err", "w");
+    synt_code = fopen("_synt_code", "w");
+    err = fopen("_errmsg.err", "w");
 
     lexical_analysis(source, lex_code, err);
 
@@ -20,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     // test();
 
-    int status = syntax_analysis(err);
+    int status = syntax_analysis(synt_code, err);
 
     if (status < 0) {
         puts("syntax analysis failed!!!\nplease checkout errmsg.err for more detail.");
@@ -31,6 +32,7 @@ int main(int argc, char* argv[]) {
     }
 
     fclose(err);
+    fclose(synt_code);
 
     return 0;
 }

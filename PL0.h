@@ -71,5 +71,17 @@ typedef enum {
 #define MAX_STATE_N 128
 #define MAX_TERMS 64
 #define MAX_LEV 12
+#define MAX_ITEM_N 1024
+
+typedef enum {
+	T_CONST,
+	T_VARIABLE,
+	T_PROCEDURE
+} TableTermType;
+
+typedef enum {
+	STK_NONT,
+	STK_T
+} StackTermType;
 
 #endif

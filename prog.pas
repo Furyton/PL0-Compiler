@@ -1,6 +1,8 @@
+const m=100;
 var x, y, z, q, r, n, f;
 
 procedure multiply;
+const mmm=101;
 var a, b;
 
 procedure divide;

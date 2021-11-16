@@ -29,4 +29,4 @@ clean:
 	rm -f compiler *.o _*
 
 cleanall:
-	rm -f -r compiler *.o _* table.grammar LR_table_gen/__pycache__ errmsg.err
+	rm -f -r compiler *.o _* table.grammar LR_table_gen/__pycache__

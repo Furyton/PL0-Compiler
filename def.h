@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "PL0.h"
 
+void *checked_malloc(int len);
+
 typedef struct {
 	SYM sym;
 	char id[MAX_ID_LEN];
@@ -53,9 +55,9 @@ int nxq; // next quad
 
 typedef struct {
 	char name[MAX_ID_LEN];
-	enum {CONST, VARIABLE, PROCEDURE} kind;
-	int val, lev, offset;
-} Var;
+	TableTermType kind;
+	int val, lev, addr;
+} Var; // used in table
 
 typedef struct {
 	Var *place;
@@ -65,14 +67,14 @@ typedef struct {
 typedef struct {
 	union {
 		NT * V;
-		SYM * T;
+		Token * T;
 	} u;
 
-	enum {NonTerminal, Terminal} kind;
+	StackTermType kind;
 } Item; // used in the stack
 
 struct Table_{
-	Var variables[MAX_VAR_PER_TABLE];
+	Var* variables[MAX_VAR_PER_TABLE];
 	int val_len;
 	int lev;
 	struct Table_* prev;
@@ -80,22 +82,43 @@ struct Table_{
 
 typedef struct Table_ Table;
 
-Table tables_stack[MAX_STACK_SIZE];
+// item stack
+
+Item item_stack[MAX_STACK_SIZE];
+int item_top;
+
+void stack_push_NT(NT * nt);
+void stack_push_T(Token * t);
+void stack_pop();
+Token* get_item(int);
+
+// table
+
+Table* tables_stack[MAX_STACK_SIZE];
 int table_top;
+
+int table_n;
+
+Table tables[MAX_TABLE_N];
+Table* cur_table;
+
+void table_pop();
+void table_enter(char* name, TableTermType type, int val);
+void table_make();
+Var* table_lookup(char* name);
+
+void table_print_all();
+
+// offset
 
 int offset_stack[MAX_LEV];
 int offset_top;
 
-int state_stack[MAX_STACK_SIZE];
-Item item_stack[MAX_STACK_SIZE];
-int top;
-
-// table
-
-void table_pop();
-// void table_enter(char* name, V_kind kind);
 
 // SLR dealer
+
+int state_stack[MAX_STACK_SIZE];
+int state_top;
 
 int state_n, symbols_n;
 
@@ -112,6 +135,6 @@ int cur_state();
 void action_shift(int nxt_state);
 void action_reduction(int grammar);
 
-int syntax_analysis(FILE* err);
+int syntax_analysis(FILE* out, FILE* err);
 
 #endif

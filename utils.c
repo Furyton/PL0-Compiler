@@ -1,6 +1,15 @@
 #include "def.h"
 #include "grammar.h"
 
+void *checked_malloc(int len) {
+	void *p = malloc(len);
+	if (!p) {
+		fprintf(stderr, "\nRan out of memory!\n");
+		exit(1);
+	}
+	return p;
+}
+
 /*************** lexical part ***************/
 
 const char keychars[] = {'+', '-', '*', '/', '(', ')', '=', ',' , '.', '<', '>',  ';' , ':'};
@@ -148,6 +157,91 @@ void print_token(FILE* out, Token *token) {
 
 /*************** syntax part ***************/
 
+
+// item stack
+
+void stack_push_NT(NT * nt) {
+	Item* i = &item_stack[++ item_top];
+	i->kind = STK_NONT;
+	i->u.V = nt;
+}
+void stack_push_T(Token * t) {
+	Item* i = &item_stack[++ item_top];
+	i->kind = STK_T;
+	i->u.T = t;
+}
+void stack_pop() {
+	item_top --;
+}
+
+Token* get_item(int i) {
+	return item_stack[item_top - i].u.T;
+}
+
+// table
+
+void table_pop() {
+	table_top --;
+	offset_top --;
+}
+void table_enter(char* name, TableTermType type, int val) {
+	Table* cur_tbl = tables_stack[table_top];
+	Var *v = checked_malloc(sizeof *v);
+	strcpy(v->name, name);
+	v->kind = type;
+	v->val = val;
+	v->lev = cur_tbl->lev;
+	if (type != T_PROCEDURE) {
+		v->addr = offset_stack[offset_top] ++;
+	}
+	cur_tbl->variables[cur_tbl->val_len++] = v;
+}
+void table_make() {
+	Table* tbl = &tables[table_n ++];
+	tbl->prev = cur_table;
+	tbl->lev = ++offset_top;
+	cur_table = tbl;
+	tables_stack[++table_top] = tbl;
+}
+Var* table_lookup(char* name) {
+	Table* tbl;
+	for (tbl = cur_table; tbl; tbl = tbl->prev) {
+		int i;
+		for (i = 0; i < tbl->val_len; i++) {
+			if (strcmp(tbl->variables[i]->name, name) == 0) {
+				return tbl->variables[i];
+			}
+		}
+	}
+	return 0;
+}
+
+void table_print_all(FILE* out) {
+	int i, j;
+	fprintf(out, "%10s\t%5s\t%8s\t%s\n================================\n","name","type","val/lev","addr");
+	for (i = 0; i < table_n; i++) {
+		for (j = 0; j < tables[i].val_len; j++) {
+			Var* v = tables[i].variables[j];
+
+			if (v->kind == T_PROCEDURE) {
+				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "proc", v->lev, v->addr);
+			} else if (v->kind == T_CONST) {
+				fprintf(out, "%10s\t%5s\t%3d/%2d\t%d\n", v->name, "const", v->val, v->lev, v->addr);
+			} else {
+				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "var", v->lev, v->addr);
+			}
+
+			// fprintf(out, "%10s\t%d\t%d\n", v->name, v->kind, v->val);
+		}
+		fprintf(out, "--------------------------------\n");
+	}
+}
+
+// offset
+
+
+// SLR dealer
+
 void read_map_table() {
 	FILE* in = fopen("table.grammar", "r");
 
@@ -187,7 +281,6 @@ void read_map_table() {
 		}
 	}
 
-
 	// grammar LHS index in table goto header
 
 	for (i = 0; i < grammar_n; i++) {
@@ -196,10 +289,6 @@ void read_map_table() {
 
 	fclose(in);
 }
-
-// void table_enter(char* name, V_kind kind) {
-// 	return;
-// }
 
 int get_next_action(int state, SYM input_sym) {
 	int i;
@@ -221,15 +310,15 @@ int get_next_action(int state, SYM input_sym) {
 }
 
 int cur_state() {
-	return state_stack[top];
+	return state_stack[state_top];
 }
 
 void action_shift(int nxt_state) {
-	state_stack[++top] = nxt_state;
+	state_stack[++state_top] = nxt_state;
 }
 
 void action_reduction(int grammar) {
-	top -= grammar_length[grammar];
+	state_top -= grammar_length[grammar];
 
 	if (grammar_index[grammar] < 0) {
 		puts("[action_reduction]: grammar_index < 0!!!");

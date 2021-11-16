@@ -16,30 +16,32 @@ int grammar_length[MAX_GRAMMAR_N];
 int grammar_index[MAX_GRAMMAR_N];
 
 
+
+
 /**
  * @brief grammar
  * 
  * 
  0:         S' -> S
  1:          S -> M Q P
- 2:          P -> C V PC N SMT
+ 2:          P -> C V PC N SMT {table_pop(); P.place.addr = N.val; }
  3:         PC -> ^
  4:         PC -> PC'
- 5:        PC' -> PH M P ;
+ 5:        PC' -> PH M P ; {}
  6:        PC' -> PC' PH M P ;
- 7:         PH -> procedure id ;
+ 7:         PH -> procedure id ; {table_lookup(id.id); table_enter(id.id, T_PROCEDURE, 0); }
  8:          C -> ^
  9:          C -> C' ;
 10:         C' -> const CD
 11:         C' -> C' , CD
-12:         CD -> id = num
+12:         CD -> id = num {table_lookup(id.id); table_enter(id.id, T_CONST, num.num); }
 13:          V -> V' ;
 14:          V -> ^
-15:         V' -> V' , id
-16:         V' -> var id
-17:          M -> ^
-18:          Q -> ^
-19:          N -> ^
+15:         V' -> V' , id {table_lookup(id.id); table_enter(id.id, T_VARIABLE, 0); }
+16:         V' -> var id {table_lookup(id.id); table_enter(id.id, T_VARIABLE, 0); }
+17:          M -> ^ {table_make();}
+18:          Q -> ^ {}
+19:          N -> ^ {N.val = nxq;}
 20:        SMT -> READ
 21:        SMT -> CONDSMT
 22:        SMT -> WRITE
