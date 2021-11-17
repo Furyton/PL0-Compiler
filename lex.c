@@ -1,82 +1,6 @@
 #include "def.h"
 
-/*
- * remove newlines and comments, replace them with blanks.
- */
-
 int row[MAX_PROG_LEN];
-
-int preprocess(int len) {
-	int i = 0, status = 0, cur_row = 1, cur_col = 1;
-	char ch;
-
-	while(i < len) {
-		ch = prog[i];
-
-		switch (status)
-		{
-		case 0:
-			if (ch == '/') status = 1;
-			else if (ch == ' ') status = 5;
-			else if (ch == '\r' || ch == '\n' || ch == '\t')  {
-				prog[i] = ' ';
-				if (ch == '\n') cur_row ++;
-			}
-
-			break;
-		
-		case 1:
-			if (ch == '/') status = 2;
-			else if (ch == '*') status = 3;
-			else {
-				status = 0;
-				i--;
-			}
-			break;
-
-		case 2:
-			if (ch == '\r' || ch == '\n') {
-				status = 0;
-				i --;
-				prog[i++] = ' ';
-				if (ch == '\n') cur_row ++;
-			}
-
-			prog[i++] = ' ';
-			break;
-		
-		case 3:
-			if (ch == '*') status = 4;
-			
-			prog[i++] = ' ';
-			break;
-		
-		case 4:
-			if (ch == '/') {
-				prog[i++] = ' ';
-				prog[i++] = ' ';
-				status = 0;
-			} else if (ch != '*')  status = 3;
-
-			prog[i++] = ' ';
-			break;
-
-		case 5:
-			if (ch == ' ') {
-				prog[i++] = ' ';
-			} else {
-				status = 0;
-				i--;
-			}
-		}
-
-		row[i] = cur_row;
-
-		i++;
-	}
-
-	return len;
-}
 
 char lookAhead(int i) {
 	if (!prog[i + 1] || prog[i + 1] == ' ') return 0;
@@ -229,7 +153,6 @@ int getSYM(int len, FILE* err) {
 			if (last_status == S_ID) {
 				tokens[token_n].sym = ID;
 				memcpy(tokens[token_n].id, str, str_len);
-				// tokens[token_n].num;
 				token_n ++;
 			} else if (last_status == S_STRING) {
 				SYM type = getKeywordType(str);
@@ -237,12 +160,10 @@ int getSYM(int len, FILE* err) {
 				if (type) {
 					tokens[token_n].sym = type;
 					memcpy(tokens[token_n].id, str, str_len);
-					// tokens[token_n].num;
 					token_n ++;
 				} else {
 					tokens[token_n].sym = ID;
 					memcpy(tokens[token_n].id, str, str_len);
-					// tokens[token_n].num;
 					token_n ++;
 				}
 			} else if (last_status == S_NUM) {
@@ -261,13 +182,8 @@ int getSYM(int len, FILE* err) {
 					break;
 				}
 			}
-
 			status = S_START;
-
 			i ++;
-
-		default:
-			break;
 		}
 	}
 
@@ -277,14 +193,14 @@ int getSYM(int len, FILE* err) {
 int lexical_analysis(FILE *in, FILE *out, FILE* err) {
 	char ch;
 
-	int len = 0;
+	int len = 0, cur_row = 1, i;
 
-	if (in) {
-		while((ch = fgetc(in)) != EOF ) prog[len ++] = ch;
+	if (in) while((ch = fgetc(in)) != EOF ) {
+		if (ch == '\r' || ch == '\n' || ch == '\t') prog[len++] = ' ';
+		else prog[len ++] = ch;
+		if (ch == '\n') cur_row ++;
+		row[len - 1] = cur_row;
 	}
-
-	fprintf(out, "original code:\n%s\n", prog);
-	len = preprocess(len);
 
 	fprintf(out, "\n=======\nafter preprocessing\n%s\n", prog);
 	fputc('\n', out);
@@ -295,10 +211,7 @@ int lexical_analysis(FILE *in, FILE *out, FILE* err) {
 
 	fprintf(out, "SYM name       SYM value            SYM row\n");
 
-	int i;
-	for (i = 0; i < token_n; i++) {
-		print_token(out, &tokens[i]);
-	}
+	for (i = 0; i < token_n; i++) print_token(out, &tokens[i]);
 
 	return 0;
 }

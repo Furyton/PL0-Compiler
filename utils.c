@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "def.h"
 #include "grammar.h"
 
@@ -196,7 +198,7 @@ Var* table_enter(char* name, TableTermType type, int val) {
 	strcpy(v->name, name);
 	v->kind = type;
 	v->val = val;
-	v->lev = offset_stack[offset_top];
+	v->lev = offset_top;
 	cur_tbl->variables[cur_tbl->val_len++] = v;
 	v->addr = -1;
 	if (type == T_VARIABLE) v->addr = offset_stack[offset_top] ++;
@@ -338,13 +340,38 @@ int action_reduction(int grammar) {
 
 	int status = 0;
 
-	if (grammar_action[grammar]) {
-		nt = grammar_action[grammar](&status);
-	}
+	if (grammar_action[grammar]) nt = grammar_action[grammar](&status);
 
 	item_top -= grammar_length[grammar];
 
 	stack_push_NT(nt);
 
 	return status;
+}
+
+
+// intercode gen part
+
+Var* new_temp() {
+	strcpy(cur_tmp_name, "T_");
+	char tmp[10];
+	sprintf(tmp, "%d", cur_tmp_cnt++);
+	strcat(cur_tmp_name, tmp);
+	return table_enter(cur_tmp_name, T_VARIABLE, 0);
+}
+
+// TODO
+void gen(char* code_name, Var* s1, Var* s2, Var* dst) {
+	printf("%2d: ", nxq);
+	printf("%s ", code_name);
+	if (s1) printf("%s ", s1->name);
+	else printf("- ");
+
+	if (s2) printf("%s ", s2->name);
+	else printf("- ");
+
+	if (dst) printf("%s \n", dst->name);
+	else printf("-\n");
+	
+	nxq++;
 }

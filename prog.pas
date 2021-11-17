@@ -51,7 +51,8 @@ begin
 end;
 
 begin
-  read(x);read(y); call multiply;write(z);
+  read(x);  
+  read(y); call multiply;write(z);
   read(x);read(y); call divide; write(q); write(r);
   read(x);read(y); call gcd; write(z);
   read(n); f := 1; call fact; write(f)

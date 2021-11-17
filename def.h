@@ -51,8 +51,6 @@ typedef enum {
 
 /*************** syntax part ***************/
 
-int nxq; // next quad
-
 typedef struct {
 	char name[MAX_ID_LEN];
 	TableTermType kind;
@@ -137,5 +135,18 @@ void action_shift(int nxt_state);
 int action_reduction(int grammar);
 
 int syntax_analysis(FILE* out, FILE* err);
+
+// intercode gen part
+
+int nxq; // next quad
+int cur_tmp_cnt;
+char cur_tmp_name[MAX_ID_LEN];
+
+Var* new_temp(); // new temperory variable
+
+void gen(char* code_name, Var* s1, Var* s2, Var* dst);
+
+int global_entry;
+
 
 #endif

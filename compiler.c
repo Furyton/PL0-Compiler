@@ -38,6 +38,8 @@ int main(int argc, char* argv[]) {
     
     puts("success!!");
 
+    printf("global entry is: %d\n", global_entry);
+
     fclose(err);
     fclose(synt_code);
 
