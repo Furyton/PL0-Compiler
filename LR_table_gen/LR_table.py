@@ -232,8 +232,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('grammar_file', type=argparse.FileType('r'), help='text file to be used as grammar')
     args = parser.parse_args()
-
+    # grammar_file = open("grammar", "r")
+    # G = Grammar(grammar_file.read())
     G = Grammar(args.grammar_file.read())
+
     slr_parser = SLRParser(G)
     slr_parser.print_info()
     

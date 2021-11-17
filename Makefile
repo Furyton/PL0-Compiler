@@ -1,7 +1,7 @@
 SOURCE_CODE := prog.pas
 
-compiler: compiler.o utils.o lex.o synt.o
-	cc -g -o compiler compiler.o utils.o lex.o synt.o
+compiler: compiler.o utils.o lex.o synt.o actions.o
+	cc -g -o compiler compiler.o utils.o lex.o synt.o actions.o
 
 compiler.o: compiler.c def.h
 	cc -g -c compiler.c
@@ -14,8 +14,11 @@ lex.o: lex.c def.h
 
 def.h: PL0.h
 
-synt.o: synt.c def.h  grammar.h table.grammar
+synt.o: synt.c def.h  grammar.h table.grammar actions.o
 	cc -g -c synt.c
+
+actions.o: actions.c def.h grammar.h
+	cc -g -c actions.c
 
 table.grammar: LR_table_gen/grammar
 	python3 LR_table_gen/LR_table.py "LR_table_gen/grammar" > table.grammar

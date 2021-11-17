@@ -174,34 +174,44 @@ void stack_pop() {
 	item_top --;
 }
 
-Token* get_item(int i) {
+Token* get_T(int i) {
 	return item_stack[item_top - i].u.T;
+}
+
+NT* get_NT(int i) {
+	return item_stack[item_top - i].u.V;
 }
 
 // table
 
-void table_pop() {
+void table_pop(char *name) {
+	strcpy(tables_stack[table_top]->name, name);
 	table_top --;
 	offset_top --;
 }
-void table_enter(char* name, TableTermType type, int val) {
+Var* table_enter(char* name, TableTermType type, int val) {
 	Table* cur_tbl = tables_stack[table_top];
 	Var *v = checked_malloc(sizeof *v);
+
 	strcpy(v->name, name);
 	v->kind = type;
 	v->val = val;
-	v->lev = cur_tbl->lev;
-	if (type != T_PROCEDURE) {
-		v->addr = offset_stack[offset_top] ++;
-	}
+	v->lev = offset_stack[offset_top];
 	cur_tbl->variables[cur_tbl->val_len++] = v;
+	v->addr = -1;
+	if (type == T_VARIABLE) v->addr = offset_stack[offset_top] ++;
+
+	return v;
 }
-void table_make() {
+
+void table_make(char* name) {
 	Table* tbl = &tables[table_n ++];
+	strcpy(tbl->name, name);
 	tbl->prev = cur_table;
-	tbl->lev = ++offset_top;
 	cur_table = tbl;
+
 	tables_stack[++table_top] = tbl;
+	offset_stack[++offset_top] = 3;
 }
 Var* table_lookup(char* name) {
 	Table* tbl;
@@ -220,13 +230,14 @@ void table_print_all(FILE* out) {
 	int i, j;
 	fprintf(out, "%10s\t%5s\t%8s\t%s\n================================\n","name","type","val/lev","addr");
 	for (i = 0; i < table_n; i++) {
+		fprintf(out, "[%s]\n", tables[i].name);
 		for (j = 0; j < tables[i].val_len; j++) {
 			Var* v = tables[i].variables[j];
 
 			if (v->kind == T_PROCEDURE) {
 				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "proc", v->lev, v->addr);
 			} else if (v->kind == T_CONST) {
-				fprintf(out, "%10s\t%5s\t%3d/%2d\t%d\n", v->name, "const", v->val, v->lev, v->addr);
+				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "const", v->val, v->addr);
 			} else {
 				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "var", v->lev, v->addr);
 			}
@@ -313,7 +324,7 @@ void action_shift(int nxt_state) {
 	state_stack[++state_top] = nxt_state;
 }
 
-void action_reduction(int grammar) {
+int action_reduction(int grammar) {
 	state_top -= grammar_length[grammar];
 
 	if (grammar_index[grammar] < 0) {
@@ -322,4 +333,18 @@ void action_reduction(int grammar) {
 	}
 
 	action_shift(map_table[cur_state()][grammar_index[grammar] + terminal_n]);
+
+	NT* nt = NULL;
+
+	int status = 0;
+
+	if (grammar_action[grammar]) {
+		nt = grammar_action[grammar](&status);
+	}
+
+	item_top -= grammar_length[grammar];
+
+	stack_push_NT(nt);
+
+	return status;
 }

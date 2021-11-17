@@ -1,6 +1,6 @@
 
 
-# file_path = "grammar.g"
+# file_path = "grammar"
 
 # grammar_file = open(file_path, "r")
 
@@ -22,15 +22,15 @@ class Grammar:
             if not self.start:
                 self.start = head
 
-            self.grammar.setdefault(head, set())
+            self.grammar.setdefault(head, [])
             self.nonterminals.add(head)
-            bodies = {tuple(body.split()) for body in ' '.join(bodies.split()).split('|')}
+            bodies = [tuple(body.split()) for body in ' '.join(bodies.split()).split('|')]
 
             for body in bodies:
                 if '^' in body and body != ('^',):
                     raise ValueError(f'\'{head} -> {" ".join(body)}\': Null symbol \'^\' is not allowed here.')
 
-                self.grammar[head].add(body)
+                self.grammar[head].append(body)
 
                 for symbol in body:
                     if not symbol.isupper() and symbol != '^':
@@ -42,7 +42,7 @@ class Grammar:
 
 # g = Grammar(grammar_file.read())
 
-# Grammar.terminals
+# # Grammar.terminals
 
 # print(g.terminals)
 

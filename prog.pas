@@ -1,9 +1,12 @@
-const m=100;
 var x, y, z, q, r, n, f;
 
 procedure multiply;
-const mmm=101;
 var a, b;
+begin
+  a := x;
+  b := y;
+  z := x*y
+end;
 
 procedure divide;
 var w;
@@ -22,7 +25,7 @@ begin
       q := q + 1
     end
   end
-end;;
+end;
 
 procedure gcd;
 var  g;

@@ -75,8 +75,8 @@ typedef struct {
 
 struct Table_{
 	Var* variables[MAX_VAR_PER_TABLE];
+	char name[MAX_ID_LEN];
 	int val_len;
-	int lev;
 	struct Table_* prev;
 };
 
@@ -90,7 +90,8 @@ int item_top;
 void stack_push_NT(NT * nt);
 void stack_push_T(Token * t);
 void stack_pop();
-Token* get_item(int);
+Token* get_T(int);
+NT* get_NT(int);
 
 // table
 
@@ -102,8 +103,8 @@ int table_n;
 Table tables[MAX_TABLE_N];
 Table* cur_table;
 
-void table_pop();
-void table_enter(char* name, TableTermType type, int val);
+void table_pop(char* name);
+Var* table_enter(char* name, TableTermType type, int val);
 void table_make();
 Var* table_lookup(char* name);
 
@@ -133,7 +134,7 @@ int get_next_action(int state, SYM input_sym);
 int cur_state();
 
 void action_shift(int nxt_state);
-void action_reduction(int grammar);
+int action_reduction(int grammar);
 
 int syntax_analysis(FILE* out, FILE* err);
 
