@@ -231,14 +231,10 @@ void table_print_all(FILE* out) {
 				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "var", v->lev, v->addr);
 			}
 
-			// fprintf(out, "%10s\t%d\t%d\n", v->name, v->kind, v->val);
 		}
 		fprintf(out, "--------------------------------\n");
 	}
 }
-
-// offset
-
 
 // SLR dealer
 

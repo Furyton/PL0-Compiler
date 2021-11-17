@@ -8,13 +8,9 @@ int syntax_analysis(FILE* out, FILE *err) {
 
     state_top = 0;
 
-    // table_enter("test", T_CONST);
-
     int i = 0;
     while(i < token_n) {
         int nxt_action = get_next_action(cur_state(), tokens[i].sym);
-
-        // fprintf(err, "[synt]: %d\n", nxt_action);
 
         if (!nxt_action) {
             puts("error!!!");

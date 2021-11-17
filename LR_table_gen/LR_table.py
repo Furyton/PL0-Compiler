@@ -181,9 +181,6 @@ class SLRParser:
 
 
         for i, (head, body) in enumerate(self.G_indexed):
-            # print(f'{i:>{len(str(len(self.G_indexed) - 1))}}: {head:>{self.max_G_prime_len}} -> {" ".join(body)}, {len(body)}')
-
-            # print(len(body))
             if body == ('^',): 
                 print(0)
             else:
@@ -197,7 +194,6 @@ class SLRParser:
             print(sym)
 
         print()
-        # print(len(self.G_indexed))
 
         for head, body in self.G_indexed:
             if head == self.G_prime.start:
@@ -215,27 +211,9 @@ class SLRParser:
 
         print(len(self.goto), self.goto)
         print("========")
-        
-        # for r in range(len(self.C)):
-        #     print(f'{r:^{3}}', end=' ')
-
-        #     for c in self.parse_table_symbols:
-        #         print(f'{self.parse_table[r][c]:^{3 - 1}}', end=' ')
-        #     print()
-
-        # print(self.parse_table)
-
-        # print(json.dumps(self.parse_table, indent=4))
-
 
         def fprint(text, variable):
             print(f'{text:>12}: {", ".join(variable)}')
-
-        # def print_line():
-        #     print(f'+{("-" * width + "+") * (len(list(self.G_prime.symbols) + ["$"]))}')
-
-        # def symbols_width(symbols):
-        #     return (width + 1) * len(symbols) - 1
 
         print('AUGMENTED GRAMMAR:')
 
@@ -244,94 +222,10 @@ class SLRParser:
 
         print()
         fprint('TERMINALS', self.G_prime.terminals)
+        print()
         fprint('NONTERMINALS', self.G_prime.nonterminals)
+        print()
         fprint('SYMBOLS', self.G_prime.symbols)
-
-        # print('\nFIRST:')
-        # for head in self.G_prime.grammar:
-        #     print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.first[head])} }}')
-
-        print('\nFOLLOW:')
-        for head in self.G_prime.grammar:
-            print(f'{head:>{self.max_G_prime_len}} = {{ {", ".join(self.follow[head])} }}')
-
-    def LR_parser(self, w):
-        buffer = f'{w} $'.split()
-        pointer = 0
-        a = buffer[pointer]
-        stack = ['0']
-        symbols = ['']
-        results = {'step': [''], 'stack': ['STACK'] + stack, 'symbols': ['SYMBOLS'] + symbols, 'input': ['INPUT'],
-                   'action': ['ACTION']}
-
-        step = 0
-        while True:
-            s = int(stack[-1])
-            step += 1
-            results['step'].append(f'({step})')
-            results['input'].append(' '.join(buffer[pointer:]))
-
-            if a not in self.parse_table[s]:
-                results['action'].append(f'ERROR: unrecognized symbol {a}')
-
-                break
-
-            elif not self.parse_table[s][a]:
-                results['action'].append('ERROR: input cannot be parsed by given grammar')
-
-                break
-
-            elif '/' in self.parse_table[s][a]:
-                action = 'reduce' if self.parse_table[s][a].count('r') > 1 else 'shift'
-                results['action'].append(f'ERROR: {action}-reduce conflict at state {s}, symbol {a}')
-
-                break
-
-            elif self.parse_table[s][a].startswith('s'):
-                results['action'].append('shift')
-                stack.append(self.parse_table[s][a][1:])
-                symbols.append(a)
-                results['stack'].append(' '.join(stack))
-                results['symbols'].append(' '.join(symbols))
-                pointer += 1
-                a = buffer[pointer]
-
-            elif self.parse_table[s][a].startswith('r'):
-                head, body = self.G_indexed[int(self.parse_table[s][a][1:])]
-                results['action'].append(f'reduce by {head} -> {" ".join(body)}')
-
-                if body != ('^',):
-                    stack = stack[:-len(body)]
-                    symbols = symbols[:-len(body)]
-
-                stack.append(str(self.parse_table[int(stack[-1])][head]))
-                symbols.append(head)
-                results['stack'].append(' '.join(stack))
-                results['symbols'].append(' '.join(symbols))
-
-            elif self.parse_table[s][a] == 'acc':
-                results['action'].append('accept')
-
-                break
-
-        return results
-
-    def print_LR_parser(self, results):
-        def print_line():
-            print(f'{"".join(["+" + ("-" * (max_len + 2)) for max_len in max_lens.values()])}+')
-
-        max_lens = {key: max(len(value) for value in results[key]) for key in results}
-        justs = {'step': '>', 'stack': '', 'symbols': '', 'input': '>', 'action': ''}
-
-        print_line()
-        print(''.join(
-            [f'| {history[0]:^{max_len}} ' for history, max_len in zip(results.values(), max_lens.values())]) + '|')
-        print_line()
-        for i, step in enumerate(results['step'][:-1], 1):
-            print(''.join([f'| {history[i]:{just}{max_len}} ' for history, just, max_len in
-                           zip(results.values(), justs.values(), max_lens.values())]) + '|')
-
-        print_line()
 
 
 def main():
