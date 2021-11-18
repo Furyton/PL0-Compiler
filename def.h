@@ -145,4 +145,8 @@ int code_n;
 
 void print_codes(FILE* out);
 
+/*************** compiler part ***************/
+
+int compile(FILE* source, FILE* lex_code, FILE* synt_code, FILE* inter_code, FILE* compile_info, FILE* err);
+
 #endif

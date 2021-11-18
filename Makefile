@@ -1,7 +1,13 @@
 SOURCE_CODE := prog.pas
 
-compiler: compiler.o utils.o lex.o synt.o actions.o
-	cc -g -o compiler compiler.o utils.o lex.o synt.o actions.o
+main: runner.o compiler.o utils.o lex.o synt.o actions.o main.o
+	cc -g -o main main.o runner.o compiler.o utils.o lex.o synt.o actions.o
+
+main.o: main.c runner.o compiler.o
+	cc -g -c main.c
+
+runner.o: runner.c runner.h def.h PL0.h
+	cc -g -c runner.c
 
 compiler.o: compiler.c def.h
 	cc -g -c compiler.c
@@ -23,13 +29,13 @@ actions.o: actions.c def.h grammar.h
 table.grammar: LR_table_gen/grammar
 	python3 LR_table_gen/LR_table.py "LR_table_gen/grammar" > table.grammar
 
-all: compiler
+all: main
 
 run: cleanall all
-	./compiler ${SOURCE_CODE}
+	./main ${SOURCE_CODE}
 
 clean:
-	rm -f compiler *.o _*
+	rm -f main *.o _*
 
 cleanall:
-	rm -f -r compiler *.o _* table.grammar LR_table_gen/__pycache__
+	rm -f -r main *.o _* table.grammar LR_table_gen/__pycache__

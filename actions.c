@@ -154,7 +154,7 @@ NT* f45_46(int* ret) {
         *ret = -2;
         return 0;
     }
-    gen(C_READ, place, 0, 0);
+    gen(C_READ, 0, 0, place);
 
     return 0;
 }
@@ -204,7 +204,8 @@ NT* f51(int* ret) {
 NT* f52(int* ret) {
     NT* T = create_a_NT();
     T->place = new_temp();
-    gen(C_MULT, get_NT(2)->place, get_NT(0)->place, T->place);
+    if (get_T(1)->sym == O_MULTI) gen(C_MULT, get_NT(2)->place, get_NT(0)->place, T->place);
+    else gen(C_DIV, get_NT(2)->place, get_NT(0)->place, T->place);
 
     return T;
 }
