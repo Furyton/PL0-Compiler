@@ -159,6 +159,27 @@ void print_token(FILE* out, Token *token) {
 
 /*************** syntax part ***************/
 
+const char* code_name[] = {
+	[C_ASSIGN] ":=",
+	[C_ODD] "odd",
+	[C_NEG] "@",
+	[C_PLUS] "+",
+	[C_MINUS] "-",
+	[C_MULT] "*",
+	[C_DIV] "/",
+	[C_GT] ">",
+	[C_GE] ">=",
+	[C_LS] "<",
+	[C_LE] "<=",
+	[C_EQ] "=",
+	[C_NEQ] "#",
+	[C_JMP] "j",
+	[C_J0] "j0",
+	[C_READ] "read",
+	[C_WRITE] "write",
+	[C_CALL] "call",
+	[C_RET] "ret",
+};
 
 // item stack
 
@@ -189,7 +210,6 @@ NT* get_NT(int i) {
 void table_pop(char *name) {
 	strcpy(tables_stack[table_top]->name, name);
 	table_top --;
-	offset_top --;
 }
 Var* table_enter(char* name, TableTermType type, int val) {
 	Table* cur_tbl = tables_stack[table_top];
@@ -198,10 +218,7 @@ Var* table_enter(char* name, TableTermType type, int val) {
 	strcpy(v->name, name);
 	v->kind = type;
 	v->val = val;
-	v->lev = offset_top;
 	cur_tbl->variables[cur_tbl->val_len++] = v;
-	v->addr = -1;
-	if (type == T_VARIABLE) v->addr = offset_stack[offset_top] ++;
 
 	return v;
 }
@@ -209,11 +226,10 @@ Var* table_enter(char* name, TableTermType type, int val) {
 void table_make(char* name) {
 	Table* tbl = &tables[table_n ++];
 	strcpy(tbl->name, name);
-	tbl->prev = cur_table;
+	tbl->prev = tables_stack[table_top];
 	cur_table = tbl;
 
 	tables_stack[++table_top] = tbl;
-	offset_stack[++offset_top] = 3;
 }
 Var* table_lookup(char* name) {
 	Table* tbl;
@@ -230,20 +246,19 @@ Var* table_lookup(char* name) {
 
 void table_print_all(FILE* out) {
 	int i, j;
-	fprintf(out, "%10s\t%5s\t%8s\t%s\n================================\n","name","type","val/lev","addr");
+	fprintf(out, "%10s\t%5s\t%5s\n================================\n","name","type","val");
 	for (i = 0; i < table_n; i++) {
 		fprintf(out, "[%s]\n", tables[i].name);
 		for (j = 0; j < tables[i].val_len; j++) {
 			Var* v = tables[i].variables[j];
 
 			if (v->kind == T_PROCEDURE) {
-				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "proc", v->lev, v->addr);
+				fprintf(out, "%10s\t%5s\t%5d\n", v->name, "proc", v->val);
 			} else if (v->kind == T_CONST) {
-				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "const", v->val, v->addr);
+				fprintf(out, "%10s\t%5s\t%5d\n", v->name, "const", v->val);
 			} else {
-				fprintf(out, "%10s\t%5s\t%8d\t%d\n", v->name, "var", v->lev, v->addr);
+				fprintf(out, "%10s\t%5s\t%5d\n", v->name, "var", v->val);
 			}
-
 		}
 		fprintf(out, "--------------------------------\n");
 	}
@@ -353,6 +368,9 @@ int action_reduction(int grammar) {
 // intercode gen part
 
 Var* new_temp() {
+	static int cur_tmp_cnt;
+	static char cur_tmp_name[MAX_ID_LEN];
+
 	strcpy(cur_tmp_name, "T_");
 	char tmp[10];
 	sprintf(tmp, "%d", cur_tmp_cnt++);
@@ -360,18 +378,58 @@ Var* new_temp() {
 	return table_enter(cur_tmp_name, T_VARIABLE, 0);
 }
 
-// TODO
-void gen(char* code_name, Var* s1, Var* s2, Var* dst) {
-	printf("%2d: ", nxq);
-	printf("%s ", code_name);
-	if (s1) printf("%s ", s1->name);
-	else printf("- ");
+Operand* get_operand_var(Var* o) {
+	if (o) {
+		Operand* t = checked_malloc(sizeof *t);
+		t->kind = VAR;
+		t->u.place = o;
+		return t;
+	}
+	return 0;
+}
+Operand* get_operand_int(int o) {
+	Operand* t = checked_malloc(sizeof *t);
+	t->kind = CONST;
+	t->u.val = o;
+	return t;
+}
 
-	if (s2) printf("%s ", s2->name);
-	else printf("- ");
+void gen_(CODE_OPR opr, Operand* s1, Operand* s2, Operand* dst) {
+	codes[code_n].instr = opr;
+	codes[code_n].s1 = s1;
+	codes[code_n].s2 = s2;
+	codes[code_n].dst = dst;
 
-	if (dst) printf("%s \n", dst->name);
-	else printf("-\n");
-	
-	nxq++;
+	code_n++;
+}
+
+void gen(CODE_OPR opr, Var* s1, Var* s2, Var* dst) {
+	gen_(opr, get_operand_var(s1), get_operand_var(s2), get_operand_var(dst));
+}
+
+void gen2(CODE_OPR opr, int s1, int s2, Var* dst) {
+	gen_(opr, get_operand_int(s1), 0, get_operand_var(dst));
+}
+
+void print_operand(Operand* o, FILE* out) {
+	if (o) {
+		if (o->kind == CONST) {
+			fprintf(out, "%10d ", o->u.val);
+		} else {
+			fprintf(out, "%10s ", o->u.place->name);
+		}
+	} else {
+		fprintf(out, "%10s ", " ");
+	}
+}
+
+void print_codes(FILE* out) {
+	int i;
+	for(i = 0; i < code_n; i++) {
+		fprintf(out, "[%2d] %5s ", i, code_name[codes[i].instr]);
+		print_operand(codes[i].s1, out);
+		print_operand(codes[i].s2, out);
+		print_operand(codes[i].dst, out);
+		fputs("\n", out);	
+	}
 }

@@ -19,17 +19,19 @@ NT* f2(int* ret) {
     NT* P = create_a_NT();
     P->val = get_NT(1)->val;
 
+    gen(C_RET, 0, 0, 0);
+
     return P;
 }
 // PC' -> PH M P ;
 NT* f5(int* ret) {
-    get_NT(3)->place->addr = get_NT(1)->val; table_pop(get_NT(3)->place->name);
+    get_NT(3)->place->val = get_NT(1)->val; table_pop(get_NT(3)->place->name);
 
     return 0;
 }
 // PC' -> PC' PH M P ;
 NT* f6(int* ret) {
-    get_NT(3)->place->addr = get_NT(1)->val;
+    get_NT(3)->place->val = get_NT(1)->val;
     table_pop(get_NT(3)->place->name);
 
     return 0;
@@ -78,20 +80,26 @@ NT* f17(int* ret) {
 // N -> ^
 NT* f18(int* ret) {
     NT* nt = create_a_NT();
-    nt->val = nxq;
+    nt->val = code_n;
 
     return nt;
 }
 // A -> id := E
 NT* f27(int* ret) {
     Var* place = table_lookup(get_T(2)->id);
-    gen("=", get_NT(0)->place, 0, place);
+    if (!place) {
+        *ret = -2;
+        return 0;
+    }
+    gen(C_ASSIGN, get_NT(0)->place, 0, place);
 
     return 0;
 }
 // COND -> E REL E
 NT* f31(int* ret) {
-    gen(">", get_NT(2)->place, get_NT(0)->place, 0);
+    CODE_OPR o = (get_NT(1)->val - O_EQ) + C_EQ;
+
+    gen(o, get_NT(2)->place, get_NT(0)->place, 0);
 
     return 0;
 }
@@ -99,34 +107,54 @@ NT* f31(int* ret) {
 NT* f32(int* ret) {
     NT* COND = create_a_NT();
     COND->place = new_temp();
-    gen("odd", get_NT(0)->place, 0, COND->place);
+    gen(C_ODD, get_NT(0)->place, 0, COND->place);
 
     return COND;
 }
+
+NT* f33_38(int* ret) {
+    NT* REL = create_a_NT();
+    REL->val = get_T(0)->sym;
+
+    return REL;
+}
+
 // CONDSMT -> if COND W then SMT
 NT* f39(int* ret) {
     // TODO
-
+    codes[get_NT(2)->val].s1->u.val = code_n;
     return 0;
 }
 // CALL -> call id
 NT* f40(int* ret) {
     Var* place = table_lookup(get_T(0)->id);
-    gen("call", place, 0, 0);
+    if (!place) {
+        *ret = -2;
+        return 0;
+    }
+    gen(C_CALL, place, 0, 0);
 
     return 0;
 }
 // WRITEBEGIN -> write ( id |  WRITEBEGIN -> WRITEBEGIN , id
 NT* f42_43(int* ret) {
     Var* place = table_lookup(get_T(0)->id);
-    gen("write", place, 0, 0);
+    if (!place) {
+        *ret = -2;
+        return 0;
+    }
+    gen(C_WRITE, place, 0, 0);
 
     return 0;
 }
 // READBEGIN -> read ( id |  READBEGIN -> READBEGIN , id
 NT* f45_46(int* ret) {
     Var* place = table_lookup(get_T(0)->id);
-    gen("read", place, 0, 0);
+    if (!place) {
+        *ret = -2;
+        return 0;
+    }
+    gen(C_READ, place, 0, 0);
 
     return 0;
 }
@@ -135,10 +163,10 @@ NT* f47(int* ret) {
     NT* E = create_a_NT();
     
     SYM op = (SYM) get_NT(1)->val;
-    if (op == NUL_TYPE) E->place = get_NT(0)->place;
+    if (op == NUL_TYPE || op == O_PLUS) E->place = get_NT(0)->place;
     else {
         E->place = new_temp();
-        gen("+", get_NT(0)->place, 0, E->place);
+        gen(C_NEG, get_NT(0)->place, 0, E->place);
     }
 
     return E;
@@ -147,7 +175,7 @@ NT* f47(int* ret) {
 NT* f48(int* ret) {
     NT* E = create_a_NT();
     E->place = new_temp();
-    gen("+", get_NT(2)->place, get_NT(0)->place, E->place);
+    gen(C_PLUS, get_NT(2)->place, get_NT(0)->place, E->place);
 
     return E;
 }
@@ -161,7 +189,7 @@ NT* f49(int* ret) {
 // PLUS -> ^
 NT* f50(int* ret) {
     NT* PLUS = create_a_NT();
-    PLUS->val = 0;
+    PLUS->val = NUL_TYPE;
 
     return PLUS;
 }
@@ -176,13 +204,17 @@ NT* f51(int* ret) {
 NT* f52(int* ret) {
     NT* T = create_a_NT();
     T->place = new_temp();
-    gen("*", get_NT(2)->place, get_NT(0)->place, T->place);
+    gen(C_MULT, get_NT(2)->place, get_NT(0)->place, T->place);
 
     return T;
 }
 // F -> id
 NT* f53(int* ret) {
     Var* place = table_lookup(get_T(0)->id);
+    if (!place) {
+        *ret = -2;
+        return 0;
+    }
     NT* F = create_a_NT();
     F->place = place;
     return F;
@@ -191,8 +223,8 @@ NT* f53(int* ret) {
 NT* f54(int* ret) {
     NT* F = create_a_NT();
     F->place = new_temp();
-    // TODO
-    gen("=", 0, 0, F->place);
+
+    gen2(C_ASSIGN, get_T(0)->num, 0, F->place);
 
     return F;
 }
@@ -205,17 +237,17 @@ NT* f55(int* ret) {
 }
 // WHILE -> while N COND W do SMT
 NT* f56(int* ret) {
-    gen("jmp", get_NT(4)->place, 0, 0);
-    // TODO
-    // fill
+    gen2(C_JMP, get_NT(4)->val, 0, 0);
+
+    codes[get_NT(2)->val].s1->u.val = code_n;
 
     return 0;
 }
 // W -> ^
 NT* f57(int* ret) {
     NT* W = create_a_NT();
-    W->val = nxq;
-    gen("j0", 0, 0, 0);
+    W->val = code_n;
+    gen2(C_J0, 0, 0, 0);
 
     return W;
 }
@@ -234,6 +266,12 @@ NT* (*grammar_action[64])(int*) = {
     [27] f27,
     [31] f31,
     [32] f32,
+    [33] f33_38,
+    [34] f33_38,
+    [35] f33_38,
+    [36] f33_38,
+    [37] f33_38,
+    [38] f33_38,
     [39] f39,
     [40] f40,
     [42] f42_43,

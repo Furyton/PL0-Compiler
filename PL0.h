@@ -1,14 +1,11 @@
 #ifndef PL0
 #define PL0
 
-#include <string.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "def.h"
 
 #define MAX_ID_LEN 10
-#define MAX_PROG_LEN 512
-#define MAX_TOKEN_N 256
+#define MAX_PROG_LEN 2048
+#define MAX_TOKEN_N 1024
 
 typedef enum {
 	NUL_TYPE,	// error
@@ -72,6 +69,7 @@ typedef enum {
 #define MAX_TERMS 64
 #define MAX_LEV 12
 #define MAX_ITEM_N 1024
+#define MAX_CODE_N 2048
 
 typedef enum {
 	T_CONST,
@@ -80,8 +78,44 @@ typedef enum {
 } TableTermType;
 
 typedef enum {
-	STK_NONT,
-	STK_T
-} StackTermType;
+	C_ASSIGN,
+	C_ODD,
+	C_NEG,
+	C_PLUS,
+	C_MINUS,
+	C_MULT,
+	C_DIV,
+	C_EQ,
+	C_LS,
+	C_LE,
+	C_GT,
+	C_GE,
+	C_NEQ,
+	C_JMP,
+	C_J0,
+	C_READ,
+	C_WRITE,
+	C_CALL,
+	C_RET
+} CODE_OPR;
+
+typedef struct {
+	char name[MAX_ID_LEN];
+	TableTermType kind;
+	int val;
+} Var; // used in table
+
+typedef struct {
+	union {
+		Var* place;
+		int val;
+	} u;
+	enum {VAR, CONST} kind;
+} Operand;
+
+typedef struct {
+	CODE_OPR instr;
+	Operand *s1, *s2, *dst;
+} Code;
 
 #endif

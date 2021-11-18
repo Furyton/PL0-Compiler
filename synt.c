@@ -17,12 +17,11 @@ void error_print(int i, const char* errmsg, FILE* err) {
     fprintf(err, "%s on %d th token in %d th row\n", errmsg, i, tokens[i - 1].row);
 }
 
-int syntax_analysis(FILE* out, FILE *err) {
+int syntax_analysis(FILE* out, FILE* intercode, FILE *err) {
     read_map_table();
-
-    memset(offset_stack, 0, sizeof(offset_stack));
-
+    
     state_top = 0;
+    code_n = 0;
 
     int i = 0;
     while(i < token_n) {
@@ -35,8 +34,12 @@ int syntax_analysis(FILE* out, FILE *err) {
         }
 
         if (nxt_action > state_n) {
-            
             table_print_all(out);
+
+            fputs("\n===============\ncodes:\n", out);
+
+            print_codes(intercode);
+
             return 0; // acc
         }
 
@@ -47,10 +50,17 @@ int syntax_analysis(FILE* out, FILE *err) {
             
             i ++;
         } else {
-            if (action_reduction(-nxt_action) < 0) {
+            int status = action_reduction(-nxt_action);
+
+            if (status == -1) {
                 error_print(i, "multiple definition ", err);
 
-                return -1;
+                return -1;                
+            }
+            if (status == -2) {
+                error_print(i, "no definition ", err);
+
+                return -1; 
             }
         }
     }

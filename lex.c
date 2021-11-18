@@ -201,6 +201,7 @@ int lexical_analysis(FILE *in, FILE *out, FILE* err) {
 		if (ch == '\n') cur_row ++;
 		row[len - 1] = cur_row;
 	}
+	prog[len++] = ' ';
 
 	fprintf(out, "\n=======\nafter preprocessing\n%s\n", prog);
 	fputc('\n', out);

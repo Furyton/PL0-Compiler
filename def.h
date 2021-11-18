@@ -52,15 +52,14 @@ typedef enum {
 /*************** syntax part ***************/
 
 typedef struct {
-	char name[MAX_ID_LEN];
-	TableTermType kind;
-	int val, lev, addr;
-} Var; // used in table
-
-typedef struct {
 	Var *place;
 	int val;
 } NT; // non terminals
+
+typedef enum {
+	STK_NONT,
+	STK_T
+} StackTermType;
 
 typedef struct {
 	union {
@@ -108,12 +107,6 @@ Var* table_lookup(char* name);
 
 void table_print_all();
 
-// offset
-
-int offset_stack[MAX_LEV];
-int offset_top;
-
-
 // SLR dealer
 
 int state_stack[MAX_STACK_SIZE];
@@ -134,19 +127,22 @@ int cur_state();
 void action_shift(int nxt_state);
 int action_reduction(int grammar);
 
-int syntax_analysis(FILE* out, FILE* err);
+int syntax_analysis(FILE* out, FILE* intercode, FILE* err);
 
 // intercode gen part
 
-int nxq; // next quad
-int cur_tmp_cnt;
-char cur_tmp_name[MAX_ID_LEN];
-
 Var* new_temp(); // new temperory variable
 
-void gen(char* code_name, Var* s1, Var* s2, Var* dst);
+void gen(CODE_OPR, Var* s1, Var* s2, Var* dst);
+
+void gen2(CODE_OPR, int s1, int s2, Var* dst);
 
 int global_entry;
 
+Code codes[MAX_CODE_N];
+
+int code_n;
+
+void print_codes(FILE* out);
 
 #endif

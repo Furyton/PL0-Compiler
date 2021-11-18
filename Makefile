@@ -26,7 +26,7 @@ table.grammar: LR_table_gen/grammar
 all: compiler
 
 run: cleanall all
-	./compiler ${SOURCE_CODE} > _info
+	./compiler ${SOURCE_CODE}
 
 clean:
 	rm -f compiler *.o _*

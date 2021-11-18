@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    FILE *source, *lex_code, *synt_code, *err;
+    FILE *source, *lex_code, *synt_code, *err, *inter_code;
 
     source = fopen(argv[1], "r");
     lex_code = fopen("_lex_code", "w");
@@ -27,8 +27,9 @@ int main(int argc, char* argv[]) {
     fclose(lex_code);
 
     synt_code = fopen("_synt_code", "w");
+    inter_code = fopen("_inter_code", "w");
     
-    if (syntax_analysis(synt_code, err) < 0) {
+    if (syntax_analysis(synt_code, inter_code,err) < 0) {
         puts("syntax analysis failed!!!\nplease checkout errmsg.err for more detail.");
         fclose(err);
         fclose(synt_code);
