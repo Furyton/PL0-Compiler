@@ -36,7 +36,7 @@ int syntax_analysis(FILE* out, FILE* intercode, FILE *err) {
         if (nxt_action > state_n) {
             table_print_all(out);
 
-            fputs("\n===============\ncodes:\n", out);
+            fputs("\n===============\ncodes:\n", intercode);
 
             print_codes(intercode);
 

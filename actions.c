@@ -121,7 +121,6 @@ NT* f33_38(int* ret) {
 
 // CONDSMT -> if COND W then SMT
 NT* f39(int* ret) {
-    // TODO
     codes[get_NT(2)->val].s1->u.val = code_n;
     return 0;
 }
@@ -175,7 +174,8 @@ NT* f47(int* ret) {
 NT* f48(int* ret) {
     NT* E = create_a_NT();
     E->place = new_temp();
-    gen(C_PLUS, get_NT(2)->place, get_NT(0)->place, E->place);
+    if (get_T(1)->sym == O_PLUS) gen(C_PLUS, get_NT(2)->place, get_NT(0)->place, E->place);
+    else gen(C_MINUS, get_NT(2)->place, get_NT(0)->place, E->place);
 
     return E;
 }

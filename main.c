@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
     fclose(source);
     fclose(lex_code);
     fclose(synt_code);
+    fclose(inter_code);
     fclose(compile_info);
 
     if (status != 0) return -1;
